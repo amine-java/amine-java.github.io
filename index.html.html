@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="fr" style="background:#0A0F0E;color:#E8F5F0;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur INC Québec 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{background:#0A0F0E!important;color:#E8F5F0!important;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0A0F0E;--bg2:#111916;--bg3:#182420;--bg4:#1F2E29;
+  --border:rgba(52,211,153,0.10);--border2:rgba(52,211,153,0.22);
+  --text:#E8F5F0;--text2:#7FB89E;--text3:#3E6E58;
+  --blue:#4FC3F7;--blue-d:rgba(79,195,247,0.12);
+  --green:#34D399;--green-d:rgba(52,211,153,0.12);
+  --teal:#2DD4BF;--teal-d:rgba(45,212,191,0.12);
+  --amber:#FBBF24;--amber-d:rgba(251,191,36,0.12);
+  --red:#F87171;--red-d:rgba(248,113,113,0.12);
+  --r:10px;
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh;}
+@media(max-width:900px){.app{grid-template-columns:1fr;}}
+
+/* SIDEBAR */
+.sidebar{background:#0D1811;border-right:1px solid var(--border2);padding:28px 20px;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.sidebar-logo{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--green);text-transform:uppercase;margin-bottom:20px;}
+.sidebar h2{font-family:'DM Serif Display',serif;font-size:19px;font-weight:400;margin-bottom:4px;}
+.sidebar h2 em{font-style:italic;color:var(--green);}
+.sidebar-sub{font-size:11px;color:var(--text3);margin-bottom:24px;line-height:1.5;}
+.sb-section{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--text3);text-transform:uppercase;margin:18px 0 12px;padding-top:18px;border-top:1px solid var(--border);}
+.sb-section:first-of-type{border-top:none;padding-top:0;}
+
+/* INPUTS */
+.inp-group{margin-bottom:16px;}
+.inp-label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:flex;justify-content:space-between;}
+.inp-val{font-family:'DM Mono',monospace;font-size:12px;color:var(--green);}
+.inp-wrap{position:relative;}
+.inp-prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);pointer-events:none;}
+.inp-suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);pointer-events:none;}
+input[type=number]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:8px 32px 8px 26px;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+input[type=number].no-prefix{padding-left:10px;}
+input[type=number]:focus{border-color:var(--green);}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+input[type=range]{width:100%;appearance:none;height:3px;border-radius:2px;background:var(--bg4);outline:none;cursor:pointer;margin-top:7px;}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--green);cursor:pointer;border:2px solid var(--bg);}
+
+/* KPI */
+.kpi-stack{display:flex;flex-direction:column;gap:6px;}
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;}
+.kpi.hi{border-color:rgba(52,211,153,0.35);background:rgba(52,211,153,0.07);}
+.kpi.warn{border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.05);}
+.kpi-label{font-size:11px;color:var(--text2);}
+.kpi-value{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.kpi-value.g{color:var(--green);}
+.kpi-value.b{color:var(--blue);}
+.kpi-value.t{color:var(--teal);}
+.kpi-value.a{color:var(--amber);}
+.kpi-value.r{color:var(--red);}
+
+/* CONTENT */
+.content{background:var(--bg);padding:28px 32px;overflow-y:auto;}
+@media(max-width:600px){.content{padding:18px 14px;}}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border2);margin-bottom:24px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:11px 15px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s;user-select:none;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--green);border-bottom-color:var(--green);}
+.section{display:none;}
+.section.active{display:block;}
+
+/* SECTION TITLE */
+.st{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin:22px 0 10px;}
+.st:first-child{margin-top:0;}
+
+/* CARDS */
+.card{background:#111916!important;border:1px solid var(--border2);border-radius:var(--r);padding:16px 20px;margin-bottom:10px;}
+.card.blue{border-color:rgba(79,195,247,0.28);background:linear-gradient(135deg,#111916 0%,rgba(79,195,247,0.06) 100%)!important;}
+.card.green{border-color:rgba(52,211,153,0.28);background:linear-gradient(135deg,#111916 0%,rgba(52,211,153,0.06) 100%)!important;}
+.card.teal{border-color:rgba(45,212,191,0.28);background:linear-gradient(135deg,#111916 0%,rgba(45,212,191,0.06) 100%)!important;}
+.card.amber{border-color:rgba(251,191,36,0.28);background:linear-gradient(135deg,#111916 0%,rgba(251,191,36,0.04) 100%)!important;}
+.card.red{border-color:rgba(248,113,113,0.28);background:linear-gradient(135deg,#111916 0%,rgba(248,113,113,0.05) 100%)!important;}
+
+/* CARD TITLE */
+.ctitle{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.ctitle-sub{font-size:11px;color:var(--text3);font-weight:400;}
+
+/* ROWS */
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+.row.sub{padding-left:14px;}
+.row.sub .rl{font-size:12px;color:var(--text3);}
+.rl{color:var(--text2);flex:1;line-height:1.4;}
+.rv{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;text-align:right;white-space:nowrap;}
+.rv.b{color:var(--blue);}
+.rv.g{color:var(--green);}
+.rv.t{color:var(--teal);}
+.rv.a{color:var(--amber);}
+.rv.r{color:var(--red);}
+.rv.n{color:var(--text);}
+.tr{display:flex;justify-content:space-between;padding:9px 0 0;margin-top:3px;border-top:1px solid var(--border2);font-size:13.5px;font-weight:600;}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}
+@media(max-width:700px){.g3,.g4{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+
+/* METRIC */
+.mc{background:#182420!important;border:1px solid var(--border2);border-radius:8px;padding:13px 15px;}
+.ml{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.mv{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;}
+.mv.b{color:var(--blue);}
+.mv.g{color:var(--green);}
+.mv.t{color:var(--teal);}
+.mv.a{color:var(--amber);}
+.mv.r{color:var(--red);}
+.ms{font-size:10px;color:var(--text3);margin-top:4px;}
+
+/* BADGE */
+.bdg{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;padding:2px 9px;border-radius:20px;margin-bottom:9px;letter-spacing:.04em;}
+.bdg.b{background:var(--blue-d);color:var(--blue);border:1px solid rgba(79,195,247,0.2);}
+.bdg.g{background:var(--green-d);color:var(--green);border:1px solid rgba(52,211,153,0.2);}
+.bdg.t{background:var(--teal-d);color:var(--teal);border:1px solid rgba(45,212,191,0.2);}
+.bdg.a{background:var(--amber-d);color:var(--amber);border:1px solid rgba(251,191,36,0.2);}
+.bdg.r{background:var(--red-d);color:var(--red);border:1px solid rgba(248,113,113,0.2);}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin-top:10px;}
+.callout.g{background:var(--green-d);border:1px solid rgba(52,211,153,0.2);color:#86EFCB;}
+.callout.a{background:var(--amber-d);border:1px solid rgba(251,191,36,0.2);color:#FCD34D;}
+.callout.r{background:var(--red-d);border:1px solid rgba(248,113,113,0.2);color:#FCA5A5;}
+.callout strong{font-weight:600;color:var(--text);}
+
+/* BUDGET INPUTS */
+.brow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.brow:last-child{border-bottom:none;}
+.brow-label{color:var(--text2);flex:1;}
+.brow-wrap{display:flex;align-items:center;gap:5px;}
+.brow-input{width:85px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:5px 7px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text);text-align:right;outline:none;transition:border-color .2s;}
+.brow-input:focus{border-color:var(--green);}
+.brow-input::-webkit-outer-spin-button,.brow-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.brow-cur{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);}
+.brow-tag{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--green-d);color:var(--green);border:1px solid rgba(52,211,153,0.2);}
+.btotal{display:flex;justify-content:space-between;padding:9px 0 0;margin-top:3px;border-top:1px solid var(--border2);font-size:13.5px;font-weight:600;}
+
+/* STEPS */
+.step{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.step:last-child{border-bottom:none;}
+.snum{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;}
+.sr{background:var(--red-d);color:var(--red);border:1px solid rgba(248,113,113,0.3);}
+.sa{background:var(--amber-d);color:var(--amber);border:1px solid rgba(251,191,36,0.3);}
+.sb{background:var(--blue-d);color:var(--blue);border:1px solid rgba(79,195,247,0.3);}
+.sg{background:var(--green-d);color:var(--green);border:1px solid rgba(52,211,153,0.3);}
+.stitle{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.sdesc{font-size:11.5px;color:var(--text2);line-height:1.5;}
+
+/* CHART */
+.chart-wrap{width:100%;height:270px;margin-bottom:12px;}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.ld{width:16px;height:3px;border-radius:2px;}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--border2);margin:18px 0;}
+
+/* SEPARATOR LABEL */
+
+
+/* TOGGLE AE */
+.ae-toggle-wrap{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;}
+.ae-toggle-label{font-size:12px;color:var(--text2);flex:1;}
+.ae-toggle-label span{font-family:'DM Mono',monospace;font-size:11px;color:var(--green);}
+.ae-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.ae-switch input{opacity:0;width:0;height:0;}
+.ae-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--bg4);border:1px solid var(--border2);border-radius:20px;transition:.2s;}
+.ae-slider:before{position:absolute;content:"";height:14px;width:14px;left:2px;bottom:2px;background:var(--text3);border-radius:50%;transition:.2s;}
+.ae-switch input:checked + .ae-slider{background:var(--green);border-color:var(--green);}
+.ae-switch input:checked + .ae-slider:before{transform:translateX(16px);background:#0A0F0E;}
+
+/* TOGGLE MENSUEL / ANNUEL */
+.toggle-wrap{display:flex;align-items:center;gap:0;margin-bottom:16px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:3px;width:fit-content;}
+.toggle-btn{padding:6px 18px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:none;background:transparent;color:var(--text3);cursor:pointer;border-radius:6px;transition:.2s;}
+.toggle-btn.active{background:var(--green);color:#0A0F0E;font-weight:600;}
+.sep{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:6px 0 2px;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sidebar-logo">INC Québec · 2025</div>
+  <h2>Simulateur <em>fiscal</em></h2>
+  <div class="sidebar-sub">Ajustez les paramètres — tout se recalcule en temps réel avec les vrais taux Québec 2025</div>
+
+  <div class="sb-section">Paramètres du contrat</div>
+
+  <div class="inp-group">
+    <div class="inp-label">Taux horaire <span class="inp-val" id="lbl-taux">105 $</span></div>
+    <div class="inp-wrap"><span class="inp-prefix">$</span><input type="number" id="inp-taux" value="105" min="50" max="300" step="5"><span class="inp-suffix">/h</span></div>
+    <input type="range" id="rng-taux" min="50" max="300" step="5" value="105">
+  </div>
+
+  <div class="inp-group">
+    <div class="inp-label">Heures / semaine <span class="inp-val" id="lbl-heures">35 h</span></div>
+    <div class="inp-wrap"><input type="number" class="no-prefix" id="inp-heures" value="35" min="10" max="60" step="1"><span class="inp-suffix">h</span></div>
+    <input type="range" id="rng-heures" min="10" max="60" step="1" value="35">
+  </div>
+
+  <div class="inp-group">
+    <div class="inp-label">Semaines / an <span class="inp-val" id="lbl-semaines">44</span></div>
+    <div class="inp-wrap"><input type="number" class="no-prefix" id="inp-semaines" value="44" min="20" max="52" step="1"><span class="inp-suffix">sem</span></div>
+    <input type="range" id="rng-semaines" min="20" max="52" step="1" value="44">
+  </div>
+
+  <div class="sb-section">Paramètres personnels</div>
+
+  <div class="inp-group">
+    <div class="inp-label">Salaire net / mois <span class="inp-val" id="lbl-salaire">6 200 $</span></div>
+    <div class="inp-wrap"><span class="inp-prefix">$</span><input type="number" id="inp-salaire" value="6200" min="2000" max="20000" step="100"><span class="inp-suffix">/mois</span></div>
+    <input type="range" id="rng-salaire" min="2000" max="20000" step="100" value="6200">
+  </div>
+
+  <div class="inp-group">
+    <div class="inp-label">Dépenses INC / an <span class="inp-val" id="lbl-depenses">8 000 $</span></div>
+    <div class="inp-wrap"><span class="inp-prefix">$</span><input type="number" id="inp-depenses" value="8000" min="0" max="40000" step="500"></div>
+    <input type="range" id="rng-depenses" min="0" max="40000" step="500" value="8000">
+  </div>
+
+  <div class="inp-group">
+    <div class="inp-label">Rendement placements <span class="inp-val" id="lbl-rendement">3.5 %</span></div>
+    <div class="inp-wrap"><input type="number" class="no-prefix" id="inp-rendement" value="3.5" min="1" max="10" step="0.5"><span class="inp-suffix">%</span></div>
+    <input type="range" id="rng-rendement" min="1" max="10" step="0.5" value="3.5">
+  </div>
+
+
+  <div class="ae-toggle-wrap">
+    <div class="ae-toggle-label">Exempté de l'AE<br><span>Travailleur désigné (actionnaire INC)</span></div>
+    <label class="ae-switch">
+      <input type="checkbox" id="toggle-ae" onchange="S.exempteAE=this.checked; compute();">
+      <span class="ae-slider"></span>
+    </label>
+  </div>
+
+  <div class="sb-section">Résultats clés</div>
+  <div class="kpi-stack">
+    <div class="kpi"><span class="kpi-label">Revenus bruts INC</span><span class="kpi-value b" id="k-revenus">—</span></div>
+    <div class="kpi"><span class="kpi-label">Coût total salarié (INC)</span><span class="kpi-value r" id="k-cout">—</span></div>
+    <div class="kpi"><span class="kpi-label">Net en poche / an</span><span class="kpi-value g" id="k-net">—</span></div>
+    <div class="kpi"><span class="kpi-label">Épargne INC nette</span><span class="kpi-value t" id="k-inc">—</span></div>
+    <div class="kpi hi"><span class="kpi-label">Épargne totale / an</span><span class="kpi-value g" id="k-total">—</span></div>
+    <div class="kpi"><span class="kpi-label">Capital retraite (20 ans)</span><span class="kpi-value a" id="k-retraite">—</span></div>
+  </div>
+</div>
+
+<!-- ═══ CONTENT ═══ -->
+<div class="content">
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('flux',this)">💼 Flux INC</div>
+    <div class="tab" onclick="showTab('employe',this)">👤 Fiche employé</div>
+    <div class="tab" onclick="showTab('budget',this)">🏠 Budget</div>
+    <div class="tab" onclick="showTab('enveloppes',this)">📦 Enveloppes</div>
+    <div class="tab" onclick="showTab('projection',this)">📈 Projection</div>
+    <div class="tab" onclick="showTab('deductions',this)">🧾 Déductions</div>
+    <div class="tab" onclick="showTab('facturation',this)">🧾 Facturation</div>
+  </div>
+
+  <!-- ══ FLUX INC ══ -->
+  <div class="section active" id="tab-flux">
+    <div class="toggle-wrap"><button class="toggle-btn active" onclick="setView('m',this,'flux')">Mensuel</button><button class="toggle-btn" onclick="setView('a',this,'flux')">Annuel</button></div>
+    <p class="st">Vue d'ensemble INC</p>
+    <div class="g4">
+      <div class="mc"><div class="ml">Heures facturées</div><div class="mv b" id="f-heures">—</div><div class="ms">par an</div></div>
+      <div class="mc"><div class="ml">Revenus bruts</div><div class="mv b" id="f-bruts">—</div><div class="ms">avant tout</div></div>
+      <div class="mc"><div class="ml">Coût total salarié</div><div class="mv r" id="f-cout-total">—</div><div class="ms">brut + charges pat.</div></div>
+      <div class="mc"><div class="ml">Épargne nette INC</div><div class="mv g" id="f-epargne">—</div><div class="ms">après impôt 20,5%</div></div>
+    </div>
+
+    <p class="st">Décomposition complète — ce que l'INC paie réellement</p>
+    <div class="card">
+      <div class="ctitle">Revenus & dépenses de l'INC</div>
+      <div class="row"><span class="rl">Revenus bruts facturés</span><span class="rv n" id="f-r1">—</span></div>
+      <div class="row"><span class="rl">Dépenses déductibles (comptable, assurances, équip…)</span><span class="rv r" id="f-r2">—</span></div>
+
+      <div class="sep">Salaire versé + charges patronales</div>
+      <div class="row"><span class="rl">Salaire brut versé (pour obtenir <span id="f-net-label">—</span> net/mois)</span><span class="rv r" id="f-r3">—</span></div>
+      <div class="row sub"><span class="rl">↳ RRQ patronal (6,4 % — plafonné 73 200 $)</span><span class="rv r" id="f-pat-rrq">—</span></div>
+      <div class="row sub"><span class="rl">↳ RRQ2 patronal (4 % sur 73 200–81 900 $)</span><span class="rv r" id="f-pat-rrq2">—</span></div>
+      <div class="row sub" id="row-ae-flux"><span class="rl">↳ AE patronale (2,296 % — plafonné 63 200 $)</span><span class="rv r" id="f-pat-ae">—</span></div>
+      <div class="row sub"><span class="rl">↳ RQAP patronal (0,692 % — plafonné 97 000 $)</span><span class="rv r" id="f-pat-rqap">—</span></div>
+      <div class="row sub"><span class="rl">↳ FSS — Fonds des services de santé (4,26 %)</span><span class="rv r" id="f-pat-fss">—</span></div>
+      <div class="row sub"><span class="rl">↳ CNESST — accidents travail (~0,5 % bureau IT)</span><span class="rv r" id="f-pat-cnesst">—</span></div>
+      <div class="row"><span class="rl"><strong>Total charges patronales</strong></span><span class="rv r" id="f-pat-total">—</span></div>
+      <div class="row"><span class="rl"><strong>Coût total salarié (brut + charges patronales)</strong></span><span class="rv r" id="f-cout-sal">—</span></div>
+
+      <div class="sep">Bénéfice imposable</div>
+      <div class="row"><span class="rl">Bénéfice imposable INC</span><span class="rv n" id="f-r5">—</span></div>
+      <div class="row"><span class="rl">Impôt corporatif (20,5 % — DPE fédérale, sans DPE QC)</span><span class="rv r" id="f-r6">—</span></div>
+      <div class="tr"><span style="color:var(--text2)">Épargne nette dans l'INC / an</span><span class="rv g" id="f-r7">—</span></div>
+    </div>
+
+    <p class="st">Comparaison salarié vs INC</p>
+    <div class="g2">
+      <div class="card">
+        <span class="bdg a">Salarié 110 k$</span>
+        <div class="row"><span class="rl">Salaire brut</span><span class="rv n">110 000 $</span></div>
+        <div class="row"><span class="rl">Impôt fédéral</span><span class="rv r">~10 600 $</span></div>
+        <div class="row"><span class="rl">Impôt provincial</span><span class="rv r">~16 700 $</span></div>
+        <div class="row"><span class="rl">RRQ + AE + RQAP employé</span><span class="rv r">~6 300 $</span></div>
+        <div class="row"><span class="rl">Net en poche / an</span><span class="rv n">~76 400 $</span></div>
+        <div class="row"><span class="rl">Épargne possible</span><span class="rv n">~15 000 $</span></div>
+        <div class="tr"><span style="color:var(--text2)">Total patrimonial / an</span><span class="rv n">~91 400 $</span></div>
+      </div>
+      <div class="card green">
+        <span class="bdg g">INC optimisé</span>
+        <div class="row"><span class="rl">Revenus bruts INC</span><span class="rv n" id="c-bruts">—</span></div>
+        <div class="row"><span class="rl">Coût total salarié INC</span><span class="rv r" id="c-cout">—</span></div>
+        <div class="row"><span class="rl">Impôt INC (20,5 %)</span><span class="rv r" id="c-impot-inc">—</span></div>
+        <div class="row"><span class="rl">Net en poche / an</span><span class="rv g" id="c-net">—</span></div>
+        <div class="row"><span class="rl">Épargne totale (CELI+REER+INC)</span><span class="rv g" id="c-epargne">—</span></div>
+        <div class="tr"><span style="color:var(--text2)">Total patrimonial / an</span><span class="rv g" id="c-total">—</span></div>
+      </div>
+    </div>
+    <div class="callout g" id="c-avantage">—</div>
+  </div>
+
+  <!-- ══ FICHE EMPLOYÉ ══ -->
+  <div class="section" id="tab-employe">
+    <div class="toggle-wrap"><button class="toggle-btn active" onclick="setView('m',this,'emp')">Mensuel</button><button class="toggle-btn" onclick="setView('a',this,'emp')">Annuel</button></div>
+    <p class="st">Ce que vous recevez et ce que vous payez</p>
+    <div class="g4">
+      <div class="mc"><div class="ml">Salaire brut</div><div class="mv n" id="e-brut">—</div><div class="ms">versé par l'INC</div></div>
+      <div class="mc"><div class="ml">Total déductions</div><div class="mv r" id="e-ded-total">—</div><div class="ms">impôts + cotisations</div></div>
+      <div class="mc"><div class="ml">Net annuel</div><div class="mv g" id="e-net-an">—</div><div class="ms">dans votre compte</div></div>
+      <div class="mc"><div class="ml">Net mensuel</div><div class="mv g" id="e-net-m">—</div><div class="ms">dans votre compte</div></div>
+    </div>
+
+    <p class="st">Déductions sur votre paie (part employé)</p>
+    <div class="card red">
+      <div class="ctitle">Ce qui sort de votre salaire brut</div>
+      <div class="row"><span class="rl">Salaire brut annuel</span><span class="rv n" id="e-r-brut">—</span></div>
+
+      <div class="sep">Impôts sur le revenu</div>
+      <div class="row"><span class="rl">Impôt fédéral (après abattement QC 16,5 % + crédit perso)</span><span class="rv r" id="e-r-fed">—</span></div>
+      <div class="row"><span class="rl">Impôt provincial Québec (après crédit perso 17 183 $)</span><span class="rv r" id="e-r-prov">—</span></div>
+
+      <div class="sep">Cotisations sociales employé</div>
+      <div class="row"><span class="rl">RRQ employé (6,4 % — max gains 73 200 $, exemption 3 500 $)</span><span class="rv r" id="e-r-rrq">—</span></div>
+      <div class="row"><span class="rl">RRQ2 employé (4 % sur gains 73 200–81 900 $)</span><span class="rv r" id="e-r-rrq2">—</span></div>
+      <div class="row" id="row-ae-emp"><span class="rl">AE — Assurance-emploi (1,64 % — max 63 200 $)</span><span class="rv r" id="e-r-ae">—</span></div>
+      <div class="row"><span class="rl">RQAP — Régime québécois d'assurance parentale (0,494 % — max 97 000 $)</span><span class="rv r" id="e-r-rqap">—</span></div>
+
+      <div class="tr"><span style="color:var(--text2)">Total déductions employé</span><span class="rv r" id="e-r-total">—</span></div>
+    </div>
+
+    <div class="g2" style="margin-top:10px;">
+      <div class="card green">
+        <div class="ctitle">Net en poche</div>
+        <div class="row"><span class="rl">Net annuel</span><span class="rv g" id="e-g-net-an">—</span></div>
+        <div class="row"><span class="rl">Net mensuel</span><span class="rv g" id="e-g-net-m">—</span></div>
+        <div class="row"><span class="rl">Net bimensuel (aux 2 sem.)</span><span class="rv g" id="e-g-net-bi">—</span></div>
+        <div class="row"><span class="rl">Taux effectif moyen</span><span class="rv a" id="e-g-taux">—</span></div>
+        <div class="row"><span class="rl">Taux marginal (dernier $)</span><span class="rv a" id="e-g-marg">—</span></div>
+        <div class="row"><span class="rl">Droits REER générés (18 %)</span><span class="rv b" id="e-g-reer">—</span></div>
+      </div>
+      <div class="card amber">
+        <div class="ctitle">Ce que l'INC paie EN PLUS pour vous</div>
+        <div class="row"><span class="rl">RRQ patronal</span><span class="rv r" id="e-a-rrq">—</span></div>
+        <div class="row"><span class="rl">RRQ2 patronal</span><span class="rv r" id="e-a-rrq2">—</span></div>
+        <div class="row" id="row-ae-pat"><span class="rl">AE patronale</span><span class="rv r" id="e-a-ae">—</span></div>
+        <div class="row"><span class="rl">RQAP patronal</span><span class="rv r" id="e-a-rqap">—</span></div>
+        <div class="row"><span class="rl">FSS (Fonds services santé)</span><span class="rv r" id="e-a-fss">—</span></div>
+        <div class="row"><span class="rl">CNESST</span><span class="rv r" id="e-a-cnesst">—</span></div>
+        <div class="tr"><span style="color:var(--text2)">Total charges patronales</span><span class="rv r" id="e-a-total">—</span></div>
+      </div>
+    </div>
+
+    <p class="st">Résumé — ce que ça coûte vraiment à l'INC pour vous verser ce salaire</p>
+    <div class="card blue">
+      <div class="row"><span class="rl">Votre salaire brut</span><span class="rv n" id="e-s-brut">—</span></div>
+      <div class="row"><span class="rl">+ Charges patronales</span><span class="rv r" id="e-s-pat">—</span></div>
+      <div class="tr"><span style="color:var(--text2)">Coût total salarié pour l'INC</span><span class="rv r" id="e-s-total">—</span></div>
+    </div>
+    <div class="callout a">
+      <strong>Pourquoi c'est important :</strong> Pour vous verser <span id="e-callout-net">—</span> net / mois, votre INC débourse en réalité <span id="e-callout-cout">—</span> — soit environ <span id="e-callout-ratio">—</span> de plus que ce que vous touchez. C'est ça le vrai coût d'un salarié pour une entreprise.
+    </div>
+  </div>
+
+  <!-- ══ BUDGET ══ -->
+  <div class="section" id="tab-budget">
+    <p class="st">Vos charges fixes mensuelles — modifiables</p>
+    <div class="card">
+      <div class="brow"><span class="brow-label">🏠 Loyer</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-loyer" value="1900" min="0" max="10000" step="50"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">⚡ Hydro-Québec</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-hydro" value="130" min="0" max="500" step="10"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">🛒 Épicerie</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-epicerie" value="800" min="0" max="3000" step="50"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">🎉 Loisirs</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-loisirs" value="400" min="0" max="3000" step="50"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">✈️ Voyages / plaisirs</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-voyages" value="700" min="0" max="5000" step="50"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">📱 Téléphone + internet</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-tel" value="140" min="0" max="500" step="10"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">🚇 Transport STM</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-transport" value="100" min="0" max="500" step="10"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">🎲 Divers / imprévus</span><div class="brow-wrap"><input class="brow-input" type="number" id="bud-divers" value="200" min="0" max="2000" step="50"><span class="brow-cur">$/mois</span></div></div>
+      <div class="brow"><span class="brow-label">🦷 Orthodontie</span><div class="brow-wrap"><span class="brow-tag">via PHSP ✓</span></div></div>
+      <div class="brow"><span class="brow-label">🚗 Voiture</span><div class="brow-wrap"><span class="brow-tag">aucune ✓</span></div></div>
+      <div class="btotal"><span style="color:var(--text2)">Total charges / mois</span><span class="rv r" id="b-total-charges">—</span></div>
+    </div>
+
+    <p class="st">Allocation du surplus mensuel</p>
+    <div class="card blue">
+      <div class="row"><span class="rl">Salaire net mensuel</span><span class="rv b" id="b-salaire">—</span></div>
+      <div class="row"><span class="rl">Total charges fixes</span><span class="rv r" id="b-charges-line">—</span></div>
+      <div class="row"><span class="rl">Surplus disponible</span><span class="rv n" id="b-surplus">—</span></div>
+      <div class="row"><span class="rl">CELI vous (583 $ / mois)</span><span class="rv g">- 583 $</span></div>
+      <div class="row"><span class="rl">CELI conjoint(e) (583 $ / mois)</span><span class="rv g">- 583 $</span></div>
+      <div class="row"><span class="rl">REER mensuel</span><span class="rv g" id="b-reer-m">—</span></div>
+      <div class="tr"><span style="color:var(--text2)">Marge résiduelle / mois</span><span class="rv n" id="b-marge">—</span></div>
+    </div>
+
+    <p class="st">Dépenses payées par l'INC (bonus)</p>
+    <div class="card green">
+      <div class="row"><span class="rl">Orthodontie (380 $ × 22 mois via PHSP)</span><span class="rv g">8 360 $ pris en charge</span></div>
+      <div class="row"><span class="rl">Téléphone pro (50 % de votre forfait)</span><span class="rv g" id="b-tel-inc">—</span></div>
+      <div class="row"><span class="rl">Bureau à domicile (15 % loyer + hydro)</span><span class="rv g" id="b-bureau">—</span></div>
+      <div class="tr"><span style="color:var(--text2)">Économie fiscale additionnelle (20,5 %)</span><span class="rv g" id="b-eco">—</span></div>
+    </div>
+  </div>
+
+  <!-- ══ ENVELOPPES ══ -->
+  <div class="section" id="tab-enveloppes">
+    <p class="st">Épargne annuelle totale</p>
+    <div class="g4">
+      <div class="mc"><div class="ml">CELI couple</div><div class="mv b">14 000 $</div><div class="ms">0% impôt à vie</div></div>
+      <div class="mc"><div class="ml">REER / an</div><div class="mv g" id="env-reer">—</div><div class="ms">+ remboursement ~43%</div></div>
+      <div class="mc"><div class="ml">Épargne INC</div><div class="mv t" id="env-inc">—</div><div class="ms">à 20,5% seulement</div></div>
+      <div class="mc"><div class="ml">Total / an</div><div class="mv" style="color:#fff;" id="env-tot">—</div><div class="ms">+ remb. REER</div></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <span class="bdg b">CELI — Vous & Conjoint(e)</span>
+        <div class="row"><span class="rl">Cotisation couple / an</span><span class="rv g">14 000 $</span></div>
+        <div class="row"><span class="rl">Espace disponible maintenant</span><span class="rv g">~32 900 $</span></div>
+        <div class="row"><span class="rl">Imposition au retrait</span><span class="rv g">0 % à vie</span></div>
+        <div class="row"><span class="rl">Impact prestations retraite</span><span class="rv g">Aucun</span></div>
+        <div class="row"><span class="rl">Priorité</span><span class="rv b">1ère — maxer chaque janvier</span></div>
+      </div>
+      <div class="card">
+        <span class="bdg g">REER — Vous + Conjoint(e)</span>
+        <div class="row"><span class="rl">Cotisation / an</span><span class="rv g" id="env-reer2">—</span></div>
+        <div class="row"><span class="rl">Droits accumulés dispo (ARC)</span><span class="rv g">32 382 $</span></div>
+        <div class="row"><span class="rl">Nouveaux droits / an (18 % brut)</span><span class="rv n" id="env-droits">—</span></div>
+        <div class="row"><span class="rl">Remboursement impôt estimé (~43 %)</span><span class="rv g" id="env-remb">—</span></div>
+        <div class="row"><span class="rl">REER conjoint — activer an 2–3</span><span class="rv a">Règle 3 ans ⚠️</span></div>
+      </div>
+    </div>
+    <div class="card teal">
+      <span class="bdg t">Épargne INC</span>
+      <div class="row"><span class="rl">Épargne nette annuelle dans l'INC</span><span class="rv t" id="env-inc2">—</span></div>
+      <div class="row"><span class="rl">Taux d'imposition sur bénéfices</span><span class="rv n">20,5 % — DPE fédérale sans DPE QC</span></div>
+      <div class="row"><span class="rl">Investissement recommandé</span><span class="rv n">ETF passif — Questrade / IBKR corporatif</span></div>
+      <div class="row"><span class="rl">Sortie à la retraite</span><span class="rv n">Dividendes progressifs à taux réduit</span></div>
+      <div class="row"><span class="rl">Avantage vs salaire immédiat</span><span class="rv g">Report d'impôt — écart 23,5 points</span></div>
+    </div>
+  </div>
+
+  <!-- ══ PROJECTION ══ -->
+  <div class="section" id="tab-projection">
+    <p class="st">Hypothèses</p>
+    <div class="g4">
+      <div class="mc"><div class="ml">Horizon</div><div class="mv t">20 ans</div><div class="ms">retraite ~53–57 ans</div></div>
+      <div class="mc"><div class="ml">Rendement</div><div class="mv b" id="p-rend">—</div><div class="ms">ajustable à gauche</div></div>
+      <div class="mc"><div class="ml">CELI initial</div><div class="mv g">32 900 $</div><div class="ms">droits accumulés</div></div>
+      <div class="mc"><div class="ml">Épargne / an</div><div class="mv g" id="p-epargne">—</div><div class="ms">toutes enveloppes</div></div>
+    </div>
+    <p class="st">Évolution sur 20 ans</p>
+    <div class="legend">
+      <span class="li"><span class="ld" style="background:var(--blue)"></span>CELI couple</span>
+      <span class="li"><span class="ld" style="background:var(--green)"></span>REER</span>
+      <span class="li"><span class="ld" style="background:var(--teal)"></span>INC</span>
+      <span class="li"><span class="ld" style="background:var(--amber)"></span>Total</span>
+    </div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+    <div class="g4">
+      <div class="mc"><div class="ml">CELI dans 20 ans</div><div class="mv b" id="p-celi">—</div><div class="ms">0 % impôt</div></div>
+      <div class="mc"><div class="ml">REER dans 20 ans</div><div class="mv g" id="p-reer">—</div><div class="ms">Fractionnement</div></div>
+      <div class="mc"><div class="ml">INC dans 20 ans</div><div class="mv t" id="p-inc">—</div><div class="ms">Dividendes</div></div>
+      <div class="mc"><div class="ml">Total accumulé</div><div class="mv" style="color:#fff;" id="p-total">—</div><div class="ms">Toutes enveloppes</div></div>
+    </div>
+    <p class="st">Revenu à la retraite — règle des 4 %</p>
+    <div class="card green">
+      <div class="row"><span class="rl">Capital total accumulé</span><span class="rv g" id="r-cap">—</span></div>
+      <div class="row"><span class="rl">Retrait annuel durable (4 %)</span><span class="rv g" id="r-annual">—</span></div>
+      <div class="row"><span class="rl">Revenu mensuel brut</span><span class="rv g" id="r-gross">—</span></div>
+      <div class="row"><span class="rl">dont CELI — 0 % impôt</span><span class="rv g" id="r-celi-m">—</span></div>
+      <div class="row"><span class="rl">dont REER — ~20 % impôt (fractionnement)</span><span class="rv a" id="r-reer-m">—</span></div>
+      <div class="row"><span class="rl">dont INC dividendes — ~25 % impôt</span><span class="rv a" id="r-inc-m">—</span></div>
+      <div class="row"><span class="rl">Impôt moyen estimé (~20 %)</span><span class="rv r" id="r-tax">—</span></div>
+      <div class="tr"><span style="color:var(--text2)">Revenu mensuel net à la retraite</span><span style="color:var(--green);font-size:16px;font-family:'DM Mono',monospace;" id="r-net">—</span></div>
+    </div>
+  </div>
+
+  <!-- ══ DÉDUCTIONS ══ -->
+  <div class="section" id="tab-deductions">
+    <p class="st">Dépenses déductibles — 8 000 $ / an (votre estimation)</p>
+    <div class="card">
+      <div class="row"><span class="rl">Honoraires comptable CPA</span><span class="rv g">3 000 $</span></div>
+      <div class="row"><span class="rl">Assurance responsabilité professionnelle</span><span class="rv g">1 500 $</span></div>
+      <div class="row"><span class="rl">Équipement tech (amorti 3–5 ans)</span><span class="rv g">1 200 $</span></div>
+      <div class="row"><span class="rl">Logiciels & abonnements SaaS</span><span class="rv g">500 $</span></div>
+      <div class="row"><span class="rl">Téléphone pro (50 %)</span><span class="rv g">480 $</span></div>
+      <div class="row"><span class="rl">Internet (50 %)</span><span class="rv g">360 $</span></div>
+      <div class="row"><span class="rl">Formation / certifications IT</span><span class="rv g">500 $</span></div>
+      <div class="row"><span class="rl">Frais bancaires INC</span><span class="rv g">200 $</span></div>
+      <div class="row"><span class="rl">Constitution + maintien INC</span><span class="rv g">260 $</span></div>
+      <div class="tr"><span style="color:var(--text2)">Total</span><span class="rv g">8 000 $</span></div>
+    </div>
+    <p class="st">Déductions supplémentaires à activer</p>
+    <div class="card green">
+      <div class="row"><span class="rl">Bureau à domicile (15 % loyer + hydro)</span><span class="rv g">~3 420 $ / an</span></div>
+      <div class="row"><span class="rl">PHSP — Orthodontie (380 $ × 22 mois)</span><span class="rv g">~8 360 $ sur 2 ans</span></div>
+      <div class="row"><span class="rl">PHSP — Autres frais médicaux (dentiste, lunettes…)</span><span class="rv g">~2 000–5 000 $ / an</span></div>
+      <div class="row"><span class="rl">Repas d'affaires avec clients (50 %)</span><span class="rv g">Variable</span></div>
+      <div class="row"><span class="rl">Conférences IT + déplacements pro</span><span class="rv g">Variable</span></div>
+    </div>
+    <p class="st">Ce que vous NE pouvez PAS déduire</p>
+    <div class="card red">
+      <div class="row"><span class="rl">Passe STM mensuelle (trajet domicile → client)</span><span class="rv r">❌ Personnel</span></div>
+      <div class="row"><span class="rl">Abonnements Netflix, Spotify, gym</span><span class="rv r">❌ Personnel</span></div>
+      <div class="row"><span class="rl">Vêtements personnels</span><span class="rv r">❌ Personnel</span></div>
+      <div class="row"><span class="rl">Repas quotidiens (sans client)</span><span class="rv r">❌ Personnel</span></div>
+    </div>
+  </div>
+
+
+  <!-- ══ FACTURATION FREELANCE ══ -->
+  <div class="section" id="tab-facturation">
+
+    <style>
+      /* ── Facturation tab scoped styles ── */
+      #tab-facturation {
+        font-family: 'DM Mono', monospace;
+      }
+      #tab-facturation .fact-header {
+        margin-bottom: 28px;
+        border-left: 3px solid var(--green);
+        padding-left: 16px;
+      }
+      #tab-facturation .fact-header h2 {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.6rem;
+        font-weight: 400;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      #tab-facturation .fact-header h2 em { color: var(--green); font-style: italic; }
+      #tab-facturation .fact-header p { font-size: 11px; color: var(--text3); letter-spacing: .05em; }
+
+      /* Settings panel */
+      #tab-facturation .fact-settings {
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: var(--r);
+        padding: 18px 20px;
+        margin-bottom: 20px;
+      }
+      #tab-facturation .fact-settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 14px;
+      }
+      #tab-facturation .fact-field { display: flex; flex-direction: column; gap: 5px; }
+      #tab-facturation .fact-field label {
+        font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text3);
+      }
+      #tab-facturation .fact-field input {
+        background: var(--bg);
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        padding: 7px 10px;
+        color: var(--text);
+        font-family: 'DM Mono', monospace;
+        font-size: 12px;
+        outline: none;
+        transition: border-color .2s;
+        width: 100%;
+      }
+      #tab-facturation .fact-field input:focus { border-color: var(--green); }
+      #tab-facturation .fact-hint {
+        font-size: 10px; color: var(--text3); margin-top: 10px; line-height: 1.6;
+      }
+      #tab-facturation .fact-apply {
+        margin-top: 14px;
+        background: var(--green);
+        color: var(--bg);
+        border: none;
+        border-radius: 7px;
+        padding: 8px 20px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s;
+      }
+      #tab-facturation .fact-apply:hover { opacity: .85; }
+
+      /* KPIs */
+      #tab-facturation .fact-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      #tab-facturation .fact-kpi {
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 8px;
+        padding: 13px 15px;
+        position: relative;
+        overflow: hidden;
+      }
+      #tab-facturation .fact-kpi::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        background: var(--green);
+      }
+      #tab-facturation .fact-kpi.fk2::before { background: var(--blue); }
+      #tab-facturation .fact-kpi.fk3::before { background: var(--teal); }
+      #tab-facturation .fact-kpi label {
+        display: block; font-size: 10px; letter-spacing: .08em; color: var(--text3);
+        text-transform: uppercase; margin-bottom: 5px;
+      }
+      #tab-facturation .fact-kpi .fv {
+        font-family: 'DM Mono', monospace; font-size: 17px; font-weight: 500; color: var(--green);
+      }
+      #tab-facturation .fact-kpi.fk2 .fv { color: var(--blue); }
+      #tab-facturation .fact-kpi.fk3 .fv { color: var(--teal); }
+      #tab-facturation .fact-kpi .fs { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+      /* Click hint */
+      #tab-facturation .fact-click-hint {
+        font-size: 11px; color: var(--text3); margin-bottom: 16px;
+        padding: 8px 12px; background: var(--bg3); border: 1px solid var(--border2);
+        border-radius: 7px;
+      }
+      #tab-facturation .fact-click-hint span { color: var(--teal); }
+
+      /* Legend */
+      #tab-facturation .fact-legend {
+        display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px;
+      }
+      #tab-facturation .fact-legend-item {
+        display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3);
+      }
+      #tab-facturation .fact-legend-dot { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+
+      /* Month sections */
+      #tab-facturation .fact-month { margin-bottom: 24px; }
+      #tab-facturation .fact-month-hdr {
+        display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px;
+      }
+      #tab-facturation .fact-month-hdr h3 {
+        font-family: 'DM Serif Display', serif; font-size: 1rem; font-weight: 400;
+        text-transform: uppercase; letter-spacing: .05em; color: var(--text);
+      }
+      #tab-facturation .fact-month-total {
+        font-size: 11px; color: var(--green);
+        background: var(--green-d); border: 1px solid rgba(52,211,153,.2);
+        padding: 2px 10px; border-radius: 20px;
+        font-family: 'DM Mono', monospace;
+      }
+      #tab-facturation .fact-week-grid {
+        display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+      }
+      #tab-facturation .fact-day-label {
+        text-align: center; font-size: 9px; color: var(--text3);
+        letter-spacing: .07em; text-transform: uppercase; padding: 3px 0;
+      }
+      #tab-facturation .fday {
+        border-radius: 6px; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; font-size: 11px; min-height: 46px;
+        transition: transform .12s; position: relative; user-select: none;
+      }
+      #tab-facturation .fday.fclickable { cursor: pointer; }
+      #tab-facturation .fday.fclickable:hover { transform: scale(1.06); z-index: 1; }
+      #tab-facturation .fday.fempty { background: transparent!important; border: none!important; pointer-events: none; }
+      #tab-facturation .fday.fwork { background: var(--bg3); border: 1px solid var(--border2); }
+      #tab-facturation .fday.fwork .famt { font-size: 9px; color: var(--green); margin-top: 2px; font-family: 'DM Mono', monospace; }
+      #tab-facturation .fday.foff { background: rgba(248,113,113,.07); border: 1px solid rgba(248,113,113,.2); }
+      #tab-facturation .fday.foff .fday-num { color: var(--red); }
+      #tab-facturation .fday.fholiday { background: var(--blue-d); border: 1px solid rgba(79,195,247,.2); }
+      #tab-facturation .fday.fholiday .fday-num { color: var(--blue); }
+      #tab-facturation .fday.fweekend { background: transparent; border: 1px solid rgba(52,211,153,.05); pointer-events: none; }
+      #tab-facturation .fday.fweekend .fday-num { color: var(--text3); opacity: .4; }
+      #tab-facturation .fday.fbefore { background: transparent; border: 1px solid rgba(52,211,153,.04); opacity: .2; pointer-events: none; }
+      #tab-facturation .fday-num { font-weight: 500; font-size: 12px; color: var(--text); }
+      #tab-facturation .fday-tag { font-size: 8px; letter-spacing: .02em; text-align: center; line-height: 1.2; padding: 0 2px; color: var(--text3); margin-top: 2px; white-space: pre-line; }
+      #tab-facturation .fday.foff .fday-tag { color: var(--red); opacity: .7; }
+      #tab-facturation .fday.fholiday .fday-tag { color: var(--blue); opacity: .7; }
+
+      /* Summary table */
+      #tab-facturation .fact-table {
+        width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 12px;
+        background: var(--bg3); border-radius: var(--r); overflow: hidden;
+        border: 1px solid var(--border2);
+      }
+      #tab-facturation .fact-table th {
+        font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .1em;
+        text-transform: uppercase; color: var(--text3); padding: 11px 14px;
+        text-align: left; background: var(--bg2); border-bottom: 1px solid var(--border2);
+      }
+      #tab-facturation .fact-table td {
+        padding: 11px 14px; border-bottom: 1px solid var(--border);
+        color: var(--text2); font-family: 'DM Mono', monospace; font-size: 12px;
+      }
+      #tab-facturation .fact-table tbody tr:hover td { background: rgba(52,211,153,.03); }
+      #tab-facturation .fact-table td:first-child { color: var(--text); font-weight: 500; }
+      #tab-facturation .fact-table .ftotal td {
+        border-top: 2px solid var(--green); border-bottom: none;
+        color: var(--green); background: var(--green-d); font-weight: 600; font-size: 13px;
+      }
+      #tab-facturation .ftag-g {
+        color: var(--green); background: var(--green-d); border: 1px solid rgba(52,211,153,.25);
+        padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;
+      }
+      #tab-facturation .ftag-n {
+        color: var(--text2); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+        padding: 2px 7px; border-radius: 4px; font-size: 11px;
+      }
+
+      /* Note */
+      #tab-facturation .fact-note {
+        margin-top: 16px; padding: 12px 16px;
+        background: var(--bg3); border: 1px solid var(--border2);
+        border-left: 3px solid var(--teal);
+        border-radius: 8px; font-size: 11px; color: var(--text3); line-height: 1.8;
+      }
+      #tab-facturation .fact-note strong { color: var(--text); }
+    </style>
+
+    <div class="fact-header">
+      <h2>Prévision <em>Facturation</em></h2>
+      <p id="fact-header-sub">Chargement…</p>
+    </div>
+
+    <!-- Settings -->
+    <div class="fact-settings">
+      <p class="st" style="margin-top:0">Paramètres</p>
+      <div class="fact-settings-grid">
+        <div class="fact-field">
+          <label>Taux horaire ($)</label>
+          <input type="number" id="fcfg-rate" value="105" min="1" step="0.5">
+        </div>
+        <div class="fact-field">
+          <label>Heures / jour</label>
+          <input type="number" id="fcfg-hpd" value="7" min="1" max="24" step="0.5">
+        </div>
+        <div class="fact-field">
+          <label>Date de début</label>
+          <input type="date" id="fcfg-start" value="2026-06-15">
+        </div>
+        <div class="fact-field">
+          <label>Date de fin</label>
+          <input type="date" id="fcfg-end" value="2027-12-31">
+        </div>
+      </div>
+      <p class="fact-hint">💡 Clique sur un jour ouvré pour le basculer en congé, et inversement.</p>
+      <button class="fact-apply" onclick="factApplySettings()">↻ Recalculer</button>
+    </div>
+
+    <div class="fact-click-hint">
+      <span>●</span> Clique sur n'importe quel jour ouvré ou congé pour changer son statut — le total se met à jour automatiquement.
+    </div>
+
+    <!-- KPIs -->
+    <div class="fact-kpi-grid" id="fact-kpis"></div>
+
+    <!-- Legend -->
+    <div class="fact-legend">
+      <div class="fact-legend-item"><div class="fact-legend-dot" style="background:var(--bg3);border:1px solid var(--border2);"></div>Jour travaillé</div>
+      <div class="fact-legend-item"><div class="fact-legend-dot" style="background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);"></div>Congé personnel</div>
+      <div class="fact-legend-item"><div class="fact-legend-dot" style="background:var(--blue-d);border:1px solid rgba(79,195,247,.2);"></div>Jour férié</div>
+      <div class="fact-legend-item"><div class="fact-legend-dot" style="background:transparent;border:1px solid rgba(52,211,153,.05);"></div>Week-end</div>
+    </div>
+
+    <!-- Calendars -->
+    <div id="fact-calendars"></div>
+
+    <!-- Summary table -->
+    <table class="fact-table" id="fact-summary"></table>
+
+    <!-- Note -->
+    <div class="fact-note" id="fact-note"></div>
+
+  </div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ─── UTILS ───────────────────────────────────────────────
+function fmt(n){ return Math.round(n).toLocaleString('fr-CA')+' $'; }
+function pct(n){ return (n*100).toFixed(1)+' %'; }
+function set(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; }
+
+// ─── STATE ───────────────────────────────────────────────
+const S = {
+  taux:105, heures:35, semaines:44, salaire:6200, depenses:8000, rendement:3.5, exempteAE:false,
+  bud_loyer:1900, bud_hydro:130, bud_epicerie:800, bud_loisirs:400,
+  bud_voyages:700, bud_tel:140, bud_transport:100, bud_divers:200
+};
+
+// ─── FISCAL QUÉBEC 2025 ──────────────────────────────────
+function calcEmploye(brut){
+  // Fédéral
+  let fed=0;
+  const fb=[[57375,.15],[114750,.205],[158519,.26],[220000,.29]];
+  let p=0;
+  for(const [m,r] of fb){ if(brut<=p)break; fed+=(Math.min(brut,m)-p)*r; p=m; }
+  if(brut>220000) fed+=(brut-220000)*.33;
+  fed=Math.max(0,fed-15705*.15);
+  fed=fed*(1-0.165); // abattement QC
+
+  // Provincial
+  let prov=0;
+  const pb=[[51780,.14],[103545,.19],[126000,.24]];
+  p=0;
+  for(const [m,r] of pb){ if(brut<=p)break; prov+=(Math.min(brut,m)-p)*r; p=m; }
+  if(brut>126000) prov+=(brut-126000)*.2575;
+  prov=Math.max(0,prov-17183*.14);
+
+  // Cotisations employé
+  const rrq_gains=Math.max(0,Math.min(brut,73200)-3500);
+  const rrq=rrq_gains*.064;
+  const rrq2=Math.max(0,Math.min(brut,81900)-73200)*.04;
+  const ae=(!window._exempteAE) ? Math.min(brut,63200)*.0164 : 0;
+  const rqap=Math.min(brut,97000)*.00494;
+
+  const totalDed=fed+prov+rrq+rrq2+ae+rqap;
+  const net=brut-totalDed;
+
+  // Taux marginal
+  let mf=.15; const fb2=[[57375,.15],[114750,.205],[158519,.26],[220000,.29]];
+  for(const [m,r] of fb2){ mf=r; if(brut<=m)break; }
+  if(brut>220000) mf=.33;
+  mf=mf*(1-0.165);
+  let mp=.14; const pb2=[[51780,.14],[103545,.19],[126000,.24]];
+  for(const [m,r] of pb2){ mp=r; if(brut<=m)break; }
+  if(brut>126000) mp=.2575;
+  const marginal=mf+mp;
+
+  return {
+    brut:Math.round(brut), fed:Math.round(fed), prov:Math.round(prov),
+    rrq:Math.round(rrq), rrq2:Math.round(rrq2), ae:Math.round(ae), rqap:Math.round(rqap),
+    totalDed:Math.round(totalDed), net:Math.round(net), netM:Math.round(net/12),
+    effectif:totalDed/brut, marginal
+  };
+}
+
+function calcPatronales(brut){
+  const rrq=Math.max(0,Math.min(brut,73200)-3500)*.064;
+  const rrq2=Math.max(0,Math.min(brut,81900)-73200)*.04;
+  const ae=(!window._exempteAE) ? Math.min(brut,63200)*.02296 : 0;
+  const rqap=Math.min(brut,97000)*.00692;
+  const fss=brut*.0426;
+  const cnesst=brut*.005;
+  const total=rrq+rrq2+ae+rqap+fss+cnesst;
+  return {rrq:Math.round(rrq),rrq2:Math.round(rrq2),ae:Math.round(ae),
+    rqap:Math.round(rqap),fss:Math.round(fss),cnesst:Math.round(cnesst),total:Math.round(total)};
+}
+
+function brutPourNet(netM){
+  const netAn=netM*12;
+  let brut=netAn*1.5;
+  for(let i=0;i<60;i++){
+    const r=calcEmploye(brut);
+    const diff=r.net-netAn;
+    if(Math.abs(diff)<5) break;
+    brut-=diff*.75;
+  }
+  return Math.round(brut);
+}
+
+// ─── CHART ───────────────────────────────────────────────
+let chartInst=null;
+function updateChart(cd,rd,id2,td,lbl){
+  if(chartInst){
+    chartInst.data.labels=lbl;
+    chartInst.data.datasets[0].data=cd;
+    chartInst.data.datasets[1].data=rd;
+    chartInst.data.datasets[2].data=id2;
+    chartInst.data.datasets[3].data=td;
+    chartInst.update('none');
+  } else {
+    const ctx=document.getElementById('chart');
+    if(!ctx) return;
+    chartInst=new Chart(ctx,{
+      type:'line',
+      data:{labels:lbl,datasets:[
+        {label:'CELI',data:cd,borderColor:'#4FC3F7',backgroundColor:'rgba(79,195,247,0.06)',borderWidth:2,pointRadius:0,fill:true},
+        {label:'REER',data:rd,borderColor:'#34D399',backgroundColor:'transparent',borderWidth:2,pointRadius:0},
+        {label:'INC', data:id2,borderColor:'#2DD4BF',backgroundColor:'transparent',borderWidth:2,pointRadius:0},
+        {label:'Total',data:td,borderColor:'#FBBF24',backgroundColor:'transparent',borderWidth:2.5,pointRadius:0,borderDash:[5,3]}
+      ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:'#182420',borderColor:'rgba(52,211,153,0.2)',borderWidth:1,titleColor:'#7FB89E',bodyColor:'#E8F5F0',callbacks:{label:c=>' '+c.dataset.label+': '+Math.round(c.raw).toLocaleString('fr-CA')+' $'}}},
+        scales:{
+          x:{ticks:{autoSkip:true,maxTicksLimit:10,font:{size:11},color:'#3E6E58'},grid:{color:'rgba(52,211,153,0.04)'}},
+          y:{ticks:{font:{size:11},color:'#3E6E58',callback:v=>v>=1000000?(v/1000000).toFixed(1)+' M$':(v/1000).toFixed(0)+' k$'},grid:{color:'rgba(52,211,153,0.04)'}}
+        },
+        animation:{duration:200}
+      }
+    });
+  }
+}
+
+// ─── COMPUTE ─────────────────────────────────────────────
+function compute(){
+  window._exempteAE = S.exempteAE || false;
+  const { taux,heures,semaines,salaire,depenses,rendement } = S;
+
+  // Revenus INC
+  const heuresAn=heures*semaines;
+  const revenus=taux*heuresAn;
+
+  // Salaire brut réel pour obtenir le net voulu
+  const salaireBrut=brutPourNet(salaire);
+  const emp=calcEmploye(salaireBrut);
+  const pat=calcPatronales(salaireBrut);
+  const coutSalarie=salaireBrut+pat.total;
+
+  // Bénéfice INC
+  const benefice=Math.max(0,revenus-depenses-coutSalarie);
+  const impotINC=Math.round(benefice*.205);
+  const epargneINC=benefice-impotINC;
+
+  // Droits REER
+  const droitsReer=Math.min(Math.round(salaireBrut*.18),31560);
+
+  // Budget & surplus
+  const totalCharges=S.bud_loyer+S.bud_hydro+S.bud_epicerie+S.bud_loisirs+
+    S.bud_voyages+S.bud_tel+S.bud_transport+S.bud_divers;
+  const surplusM=salaire-totalCharges;
+  const celiM=14000/12;
+  const reerM=Math.max(0,surplusM-celiM);
+  const reerAn=Math.round(reerM*12);
+  const rembReer=Math.round(reerAn*.43);
+  const epargneTotal=14000+reerAn+epargneINC;
+  const impotTotal=emp.totalDed+pat.total+impotINC;
+
+  // INC déductions liées au budget
+  const telInc=Math.round(S.bud_tel*.5*12);
+  const bureau=Math.round((S.bud_loyer+S.bud_hydro)*.15*12);
+  const ecoFisc=Math.round((telInc+bureau+836)*.205);
+
+  // Projection 20 ans
+  const rate=rendement/100;
+  const celiAnn=14000+rembReer;
+  const lbl=[],cd=[],rd=[],id2=[],td=[];
+  let cv=32900,rv=0,iv=0;
+  for(let y=1;y<=20;y++){
+    cv=(cv+celiAnn)*(1+rate);
+    rv=(rv+reerAn)*(1+rate);
+    iv=(iv+epargneINC)*(1+rate);
+    lbl.push('An '+y);
+    cd.push(Math.round(cv)); rd.push(Math.round(rv)); id2.push(Math.round(iv)); td.push(Math.round(cv+rv+iv));
+  }
+  const fc=cd[19],fr=rd[19],fi=id2[19],ft=td[19];
+  const mw=Math.round(ft*.04/12);
+
+  // ── SIDEBAR KPI ──
+  set('k-revenus',fmt(revenus));
+  set('k-cout',fmt(coutSalarie));
+  set('k-net',fmt(salaire*12)+' / an');
+  set('k-inc',fmt(epargneINC));
+  set('k-total',fmt(epargneTotal));
+  set('k-retraite',fmt(ft));
+
+  // ── FLUX INC ──
+  set('f-heures',heuresAn.toLocaleString('fr-CA')+' h');
+  set('f-bruts',fmt(revenus));
+  set('f-cout-total',fmt(coutSalarie));
+  set('f-epargne',fmt(epargneINC));
+  set('f-net-label',fmt(salaire)+'/mois');
+  set('f-r1',fmt(revenus));
+  set('f-r2','- '+fmt(depenses));
+  set('f-r3','- '+fmt(salaireBrut));
+  set('f-pat-rrq','- '+fmt(pat.rrq));
+  set('f-pat-rrq2','- '+fmt(pat.rrq2));
+  set('f-pat-ae','- '+fmt(pat.ae));
+  set('f-pat-rqap','- '+fmt(pat.rqap));
+  set('f-pat-fss','- '+fmt(pat.fss));
+  set('f-pat-cnesst','- '+fmt(pat.cnesst));
+  set('f-pat-total','- '+fmt(pat.total));
+  set('f-cout-sal','- '+fmt(coutSalarie));
+  set('f-r5',fmt(benefice));
+  set('f-r6','- '+fmt(impotINC));
+  set('f-r7',fmt(epargneINC));
+  // Comparaison
+  set('c-bruts',fmt(revenus));
+  set('c-cout','- '+fmt(coutSalarie));
+  set('c-impot-inc','- '+fmt(impotINC));
+  set('c-net',fmt(salaire*12));
+  set('c-epargne',fmt(epargneTotal));
+  set('c-total',fmt(salaire*12+epargneINC));
+  const avantage=salaire*12+epargneINC-91400;
+  set('c-avantage',avantage>0
+    ? `Avantage INC vs salarié 110k$ : +${fmt(avantage)} / an de patrimoine supplémentaire.`
+    : `Attention : avec ce paramétrage, l'avantage INC est réduit. Vérifiez votre taux horaire ou votre salaire.`);
+
+  // ── FICHE EMPLOYÉ ──
+  set('e-brut',fmt(salaireBrut));
+  set('e-ded-total',fmt(emp.totalDed));
+  set('e-net-an',fmt(emp.net));
+  set('e-net-m',fmt(emp.netM)+' / mois');
+  set('e-r-brut',fmt(salaireBrut));
+  set('e-r-fed','- '+fmt(emp.fed));
+  set('e-r-prov','- '+fmt(emp.prov));
+  set('e-r-rrq','- '+fmt(emp.rrq));
+  set('e-r-rrq2','- '+fmt(emp.rrq2));
+  set('e-r-ae','- '+fmt(emp.ae));
+  set('e-r-rqap','- '+fmt(emp.rqap));
+  set('e-r-total','- '+fmt(emp.totalDed));
+  set('e-g-net-an',fmt(emp.net)+' / an');
+  set('e-g-net-m',fmt(emp.netM)+' / mois');
+  set('e-g-net-bi',fmt(Math.round(emp.net/26))+' / 2 semaines');
+  set('e-g-taux',pct(emp.effectif));
+  set('e-g-marg',pct(emp.marginal));
+  set('e-g-reer',fmt(droitsReer)+' / an');
+  set('e-a-rrq',fmt(pat.rrq));
+  set('e-a-rrq2',fmt(pat.rrq2));
+  set('e-a-ae',fmt(pat.ae));
+  set('e-a-rqap',fmt(pat.rqap));
+  set('e-a-fss',fmt(pat.fss));
+  set('e-a-cnesst',fmt(pat.cnesst));
+  set('e-a-total',fmt(pat.total));
+  set('e-s-brut',fmt(salaireBrut));
+  set('e-s-pat','+ '+fmt(pat.total));
+  set('e-s-total',fmt(coutSalarie));
+  set('e-callout-net',fmt(salaire)+'/mois');
+  set('e-callout-cout',fmt(coutSalarie)+'/an');
+  const ratio=Math.round((coutSalarie/emp.net-1)*100);
+  set('e-callout-ratio',ratio+'%');
+
+  // ── BUDGET ──
+  set('b-total-charges',fmt(totalCharges)+' / mois');
+  set('b-salaire',fmt(salaire)+' / mois');
+  set('b-charges-line','- '+fmt(totalCharges)+' / mois');
+  set('b-surplus',fmt(Math.max(0,surplusM))+' / mois');
+  set('b-reer-m','- '+fmt(Math.round(reerM))+' / mois');
+  const marge=surplusM-celiM-reerM;
+  set('b-marge',fmt(Math.round(marge))+' / mois');
+  set('b-tel-inc','~'+fmt(telInc)+' / an');
+  set('b-bureau','~'+fmt(bureau)+' / an');
+  set('b-eco','~'+fmt(ecoFisc)+' / an');
+
+  // ── ENVELOPPES ──
+  set('env-reer',fmt(reerAn));
+  set('env-inc',fmt(epargneINC));
+  set('env-tot',fmt(epargneTotal));
+  set('env-reer2',fmt(reerAn));
+  set('env-droits','~'+fmt(droitsReer)+' / an');
+  set('env-remb','~'+fmt(rembReer)+' / an');
+  set('env-inc2',fmt(epargneINC));
+
+  // ── PROJECTION ──
+  set('p-rend',rendement.toFixed(1)+' %');
+  set('p-epargne',fmt(epargneTotal));
+  set('p-celi',fmt(fc));
+  set('p-reer',fmt(fr));
+  set('p-inc',fmt(fi));
+  set('p-total',fmt(ft));
+  set('r-cap',fmt(ft));
+  set('r-annual',fmt(Math.round(ft*.04))+' / an');
+  set('r-gross',fmt(mw)+' / mois');
+  set('r-celi-m',fmt(Math.round(fc*.04/12))+' / mois');
+  set('r-reer-m',fmt(Math.round(fr*.04/12))+' / mois');
+  set('r-inc-m',fmt(Math.round(fi*.04/12))+' / mois');
+  set('r-tax','- '+fmt(Math.round(mw*.2))+' / mois');
+  set('r-net',fmt(Math.round(mw*.8))+' / mois');
+
+  updateChart(cd,rd,id2,td,lbl);
+
+  // Stocker pour le toggle
+  window._lastCalc = {
+    revenus, depenses, salaireBrut, coutSalarie, benefice, impotINC, epargneINC,
+    emp, pat
+  };
+  renderViews();
+}
+
+
+// ─── TOGGLE MENSUEL / ANNUEL ─────────────────────────────
+const views = { flux: 'm', emp: 'm' };
+
+function setView(mode, el, tab) {
+  views[tab] = mode;
+  el.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderViews();
+}
+
+function renderViews() {
+  if (!window._lastCalc) return;
+  const d = window._lastCalc;
+  const div = (v, mode) => mode === 'm' ? Math.round(v / 12) : Math.round(v);
+  const fmtV = (v, mode) => fmt(div(v, mode)) + (mode === 'm' ? ' / mois' : ' / an');
+
+  // ── FLUX INC ──
+  const fm = views.flux;
+  set('f-r1', fmtV(d.revenus, fm));
+  set('f-r2', '- ' + fmtV(d.depenses, fm));
+  set('f-r3', '- ' + fmtV(d.salaireBrut, fm));
+  set('f-pat-rrq', '- ' + fmtV(d.pat.rrq, fm));
+  set('f-pat-rrq2', '- ' + fmtV(d.pat.rrq2, fm));
+  set('f-pat-ae', '- ' + fmtV(d.pat.ae, fm));
+  set('f-pat-rqap', '- ' + fmtV(d.pat.rqap, fm));
+  set('f-pat-fss', '- ' + fmtV(d.pat.fss, fm));
+  set('f-pat-cnesst', '- ' + fmtV(d.pat.cnesst, fm));
+  set('f-pat-total', '- ' + fmtV(d.pat.total, fm));
+  set('f-cout-sal', '- ' + fmtV(d.coutSalarie, fm));
+  set('f-r5', fmtV(d.benefice, fm));
+  set('f-r6', '- ' + fmtV(d.impotINC, fm));
+  set('f-r7', fmtV(d.epargneINC, fm));
+  set('c-cout', '- ' + fmtV(d.coutSalarie, fm));
+  set('c-impot-inc', '- ' + fmtV(d.impotINC, fm));
+
+  // ── FICHE EMPLOYÉ ──
+  const em = views.emp;
+  set('e-r-brut', fmtV(d.salaireBrut, em));
+  set('e-r-fed', '- ' + fmtV(d.emp.fed, em));
+  set('e-r-prov', '- ' + fmtV(d.emp.prov, em));
+  set('e-r-rrq', '- ' + fmtV(d.emp.rrq, em));
+  set('e-r-rrq2', '- ' + fmtV(d.emp.rrq2, em));
+  set('e-r-ae', '- ' + fmtV(d.emp.ae, em));
+  set('e-r-rqap', '- ' + fmtV(d.emp.rqap, em));
+  set('e-r-total', '- ' + fmtV(d.emp.totalDed, em));
+  set('e-g-net-an', fmt(d.emp.net) + ' / an');
+  set('e-g-net-m', fmt(d.emp.netM) + ' / mois');
+  set('e-a-rrq', fmtV(d.pat.rrq, em));
+  set('e-a-rrq2', fmtV(d.pat.rrq2, em));
+  set('e-a-ae', fmtV(d.pat.ae, em));
+  set('e-a-rqap', fmtV(d.pat.rqap, em));
+  set('e-a-fss', fmtV(d.pat.fss, em));
+  set('e-a-cnesst', fmtV(d.pat.cnesst, em));
+  set('e-a-total', fmtV(d.pat.total, em));
+  set('e-s-brut', fmtV(d.salaireBrut, em));
+  set('e-s-pat', '+ ' + fmtV(d.pat.total, em));
+  set('e-s-total', fmtV(d.coutSalarie, em));
+
+  // Grisage lignes AE si exempté
+  const aeRows = ['row-ae-emp','row-ae-pat','row-ae-flux'];
+  aeRows.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (S.exempteAE) {
+      el.style.opacity = '0.35';
+      el.style.textDecoration = 'line-through';
+    } else {
+      el.style.opacity = '1';
+      el.style.textDecoration = 'none';
+    }
+  });
+}
+
+// ─── BINDINGS ────────────────────────────────────────────
+function bind(key,inpId,rngId,lblId,suffix){
+  const inp=document.getElementById(inpId);
+  const rng=document.getElementById(rngId);
+  const lbl=document.getElementById(lblId);
+  function upd(v){
+    v=parseFloat(v); if(isNaN(v)) return;
+    S[key]=v; inp.value=v; rng.value=v;
+    lbl.textContent=Number.isInteger(v)?v.toLocaleString('fr-CA')+' '+suffix:v.toFixed(1)+' '+suffix;
+    compute();
+  }
+  inp.addEventListener('input',()=>upd(inp.value));
+  rng.addEventListener('input',()=>upd(rng.value));
+}
+bind('taux','inp-taux','rng-taux','lbl-taux','$');
+bind('heures','inp-heures','rng-heures','lbl-heures','h');
+bind('semaines','inp-semaines','rng-semaines','lbl-semaines','sem');
+bind('salaire','inp-salaire','rng-salaire','lbl-salaire','$');
+bind('depenses','inp-depenses','rng-depenses','lbl-depenses','$');
+bind('rendement','inp-rendement','rng-rendement','lbl-rendement','%');
+
+// Budget
+[['bud_loyer','bud-loyer'],['bud_hydro','bud-hydro'],['bud_epicerie','bud-epicerie'],
+ ['bud_loisirs','bud-loisirs'],['bud_voyages','bud-voyages'],['bud_tel','bud-tel'],
+ ['bud_transport','bud-transport'],['bud_divers','bud-divers']
+].forEach(([key,id])=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input',()=>{ S[key]=Math.max(0,parseFloat(el.value)||0); compute(); });
+});
+
+// Tabs
+function showTab(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='projection') setTimeout(()=>{ if(chartInst) chartInst.resize(); },50);
+  if(name==='facturation' && !window._factInitialized){
+    window._factInitialized=true;
+    factRender();
+  }
+}
+
+// ─── FACTURATION FREELANCE ────────────────────────────────
+const FACT_QC_HOLIDAYS = {
+  2026: {
+    5:  { 24: 'Fête\nnation.' },
+    6:  { 1:  'Fête\nCanada' },
+    8:  { 7:  'Fête\ntravail' },
+    9:  { 12: 'Action\nde grâce' },
+    10: { 11: 'Jour\nSouvenir' },
+    11: { 25: 'Noël', 26: 'Après\nNoël' },
+  },
+  2027: {
+    5:  { 24: 'Fête\nnation.' },
+    6:  { 1:  'Fête\nCanada' },
+    8:  { 6:  'Fête\ntravail' },
+    9:  { 11: 'Action\nde grâce' },
+    10: { 11: 'Jour\nSouvenir' },
+    11: { 25: 'Noël', 26: 'Après\nNoël' },
+  },
+};
+
+let FACT_CFG = {
+  rate: 105,
+  hpd: 7,
+  startDate: new Date(2026, 5, 15),
+  endDate: new Date(2027, 11, 31),
+};
+
+let factUserOff = new Set([
+  '2026-6-2','2026-6-3','2026-6-23',
+  '2026-7-4','2026-7-5','2026-7-6','2026-7-7','2026-7-8',
+  '2026-8-2','2026-8-3',
+  '2026-9-1','2026-9-2',
+  '2026-10-1','2026-10-2',
+  '2026-11-2','2026-11-3',
+  '2026-12-1','2026-12-2',
+  '2027-0-4','2027-0-5',
+  '2027-1-1','2027-1-2',
+  '2027-2-1','2027-2-2',
+  '2027-3-1','2027-3-2',
+  '2027-4-3','2027-4-4',
+  '2027-5-1','2027-5-2',
+  '2027-6-2','2027-6-5',
+  '2027-7-2','2027-7-3',
+  '2027-8-1','2027-8-2',
+  '2027-9-1','2027-9-4',
+  '2027-10-1','2027-10-2',
+  '2027-11-1','2027-11-2',
+]);
+
+function factKey(y,m,d){ return `${y}-${m}-${d}`; }
+
+function factGetDayStatus(y,m,d){
+  const date=new Date(y,m,d), dow=date.getDay();
+  if(date<FACT_CFG.startDate||date>FACT_CFG.endDate) return {status:'fbefore',label:''};
+  if(dow===0||dow===6) return {status:'fweekend',label:''};
+  const yh=FACT_QC_HOLIDAYS[y]||{};
+  if(yh[m]&&yh[m][d]) return {status:'fholiday',label:yh[m][d]};
+  if(factUserOff.has(factKey(y,m,d))) return {status:'foff',label:'Congé'};
+  return {status:'fwork',label:''};
+}
+
+function factToggleDay(y,m,d){
+  const cur=factGetDayStatus(y,m,d).status, k=factKey(y,m,d);
+  if(cur==='fwork') factUserOff.add(k);
+  else if(cur==='foff') factUserOff.delete(k);
+  factRender();
+}
+
+function factApplySettings(){
+  FACT_CFG.rate=parseFloat(document.getElementById('fcfg-rate').value)||105;
+  FACT_CFG.hpd =parseFloat(document.getElementById('fcfg-hpd').value)||7;
+  const sv=document.getElementById('fcfg-start').value;
+  const ev=document.getElementById('fcfg-end').value;
+  if(sv){const p=sv.split('-');FACT_CFG.startDate=new Date(+p[0],+p[1]-1,+p[2]);}
+  if(ev){const p=ev.split('-');FACT_CFG.endDate  =new Date(+p[0],+p[1]-1,+p[2]);}
+  factRender();
+}
+
+function factGetMonths(){
+  const s=FACT_CFG.startDate,e=FACT_CFG.endDate,months=[];
+  let y=s.getFullYear(),m=s.getMonth();
+  while(new Date(y,m,1)<=e){months.push({year:y,month:m});m++;if(m>11){m=0;y++;}}
+  return months;
+}
+
+const FACT_MONTH_FR =['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const FACT_DAY_NAMES=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+
+function factRender(){
+  const DAY_BILLING=FACT_CFG.rate*FACT_CFG.hpd;
+  const months=factGetMonths();
+  const fmtD=d=>d.toLocaleDateString('fr-CA',{day:'numeric',month:'long',year:'numeric'});
+  const hSub=document.getElementById('fact-header-sub');
+  if(hSub) hSub.textContent=`${fmtD(FACT_CFG.startDate)} — ${fmtD(FACT_CFG.endDate)} · ${FACT_CFG.rate} $/H · ${FACT_CFG.hpd}H/JOUR · QUÉBEC`;
+
+  const calEl=document.getElementById('fact-calendars');
+  if(!calEl) return;
+  calEl.innerHTML='';
+  let monthData=[];
+
+  months.forEach(({year,month})=>{
+    const firstDay=new Date(year,month,1).getDay();
+    const daysInMonth=new Date(year,month+1,0).getDate();
+    let workDays=0,offDays=0,holidayDays=0;
+    for(let d=1;d<=daysInMonth;d++){
+      const {status}=factGetDayStatus(year,month,d);
+      if(status==='fwork') workDays++;
+      else if(status==='foff') offDays++;
+      else if(status==='fholiday') holidayDays++;
+    }
+    const billing=workDays*DAY_BILLING;
+    monthData.push({name:FACT_MONTH_FR[month],workDays,offDays,holidayDays,billing});
+
+    const section=document.createElement('div');
+    section.className='fact-month';
+    const hdr=document.createElement('div');
+    hdr.className='fact-month-hdr';
+    hdr.innerHTML=`<h3>${FACT_MONTH_FR[month]} ${year}</h3><span class="fact-month-total">${billing.toLocaleString('fr-CA')} $</span>`;
+    section.appendChild(hdr);
+
+    const grid=document.createElement('div');
+    grid.className='fact-week-grid';
+    FACT_DAY_NAMES.forEach(n=>{const l=document.createElement('div');l.className='fact-day-label';l.textContent=n;grid.appendChild(l);});
+    for(let i=0;i<firstDay;i++){const e=document.createElement('div');e.className='fday fempty';grid.appendChild(e);}
+
+    for(let d=1;d<=daysInMonth;d++){
+      const {status,label}=factGetDayStatus(year,month,d);
+      const cell=document.createElement('div');
+      cell.className=`fday ${status}`;
+      const clickable=status==='fwork'||status==='foff';
+      if(clickable){
+        cell.classList.add('fclickable');
+        cell.title=status==='fwork'?'Cliquer pour marquer congé':'Cliquer pour marquer travaillé';
+        const _y=year,_m=month,_d=d;
+        cell.addEventListener('click',()=>factToggleDay(_y,_m,_d));
+      }
+      const num=document.createElement('div');num.className='fday-num';num.textContent=d;cell.appendChild(num);
+      if(status==='fwork'){const amt=document.createElement('div');amt.className='famt';amt.textContent=DAY_BILLING.toLocaleString('fr-CA')+' $';cell.appendChild(amt);}
+      else if(label){const tag=document.createElement('div');tag.className='fday-tag';tag.textContent=label;cell.appendChild(tag);}
+      grid.appendChild(cell);
+    }
+    section.appendChild(grid);
+    calEl.appendChild(section);
+  });
+
+  const totalWork=monthData.reduce((a,b)=>a+b.workDays,0);
+  const total    =monthData.reduce((a,b)=>a+b.billing,0);
+  const totalOff =monthData.reduce((a,b)=>a+b.offDays,0);
+  const totalHol =monthData.reduce((a,b)=>a+b.holidayDays,0);
+  const numMonths=monthData.length||1;
+
+  const kpisEl=document.getElementById('fact-kpis');
+  if(kpisEl) kpisEl.innerHTML=[
+    {label:'Facturation totale',val:total.toLocaleString('fr-CA')+' $',sub:months.length+' mois',cls:''},
+    {label:'Jours facturés',val:totalWork+' j',sub:totalWork*FACT_CFG.hpd+' heures',cls:'fk2'},
+    {label:'Taux journalier',val:DAY_BILLING.toLocaleString('fr-CA')+' $',sub:FACT_CFG.hpd+'h × '+FACT_CFG.rate+' $/h',cls:'fk3'},
+    {label:'Moy. mensuelle',val:Math.round(total/numMonths).toLocaleString('fr-CA')+' $',sub:'par mois',cls:''},
+  ].map(k=>`<div class="fact-kpi ${k.cls}"><label>${k.label}</label><div class="fv">${k.val}</div><div class="fs">${k.sub}</div></div>`).join('');
+
+  const sumEl=document.getElementById('fact-summary');
+  if(sumEl) sumEl.innerHTML=`
+    <thead><tr><th>Mois</th><th>Travaillés</th><th>Congés</th><th>Fériés</th><th>Heures</th><th>Facturation</th></tr></thead>
+    <tbody>${monthData.map(m=>`<tr>
+      <td>${m.name}</td>
+      <td><span class="ftag-n">${m.workDays} j</span></td>
+      <td><span class="ftag-n">${m.offDays} j</span></td>
+      <td><span class="ftag-n">${m.holidayDays} j</span></td>
+      <td><span class="ftag-n">${m.workDays*FACT_CFG.hpd} h</span></td>
+      <td><span class="ftag-g">${m.billing.toLocaleString('fr-CA')} $</span></td>
+    </tr>`).join('')}
+    <tr class="ftotal"><td>TOTAL</td><td>${totalWork} j</td><td>${totalOff} j</td><td>${totalHol} j</td><td>${totalWork*FACT_CFG.hpd} h</td><td>${total.toLocaleString('fr-CA')} $</td></tr>
+    </tbody>`;
+
+  const noteEl=document.getElementById('fact-note');
+  if(noteEl) noteEl.innerHTML=`<strong>Notes :</strong><br>· <strong>Jours fériés QC/Canada :</strong> 24 juin, 1er juil., Fête du Travail, Action de grâce, Jour du Souvenir, Noël (2026 & 2027)<br>· <strong>Congés :</strong> ${totalOff} jours personnels sélectionnés (clique sur le calendrier pour ajuster)<br>· Taux : <strong>${FACT_CFG.rate} $ CAD / h</strong> · Journée : <strong>${FACT_CFG.hpd} h</strong><br>· Estimations brutes avant impôts et charges.`;
+}
+
+compute();
+</script>
+</body>
+</html>
