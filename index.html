@@ -191,6 +191,128 @@ hr{border:none;border-top:1px solid var(--border2);margin:18px 0;}
 </style>
 </head>
 <body>
+
+<!-- ═══ LOCK SCREEN ═══ -->
+<style>
+#lockscreen{
+  position:fixed;inset:0;z-index:9999;
+  background:#0A0F0E;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Outfit',sans-serif;
+}
+#lockscreen.hidden{display:none;}
+.lock-box{
+  width:320px;text-align:center;
+}
+.lock-icon{
+  font-size:36px;margin-bottom:20px;
+  display:block;
+}
+.lock-box h1{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;font-weight:400;
+  color:#E8F5F0;margin-bottom:6px;
+}
+.lock-box h1 em{color:#34D399;font-style:italic;}
+.lock-sub{
+  font-size:11px;color:#3E6E58;
+  letter-spacing:.07em;margin-bottom:28px;
+}
+.lock-input-wrap{position:relative;margin-bottom:12px;}
+.lock-input-wrap input{
+  width:100%;
+  background:#111916;
+  border:1px solid rgba(52,211,153,0.22);
+  border-radius:8px;
+  padding:11px 44px 11px 14px;
+  font-family:'DM Mono',monospace;
+  font-size:14px;
+  color:#E8F5F0;
+  outline:none;
+  letter-spacing:.08em;
+  transition:border-color .2s;
+  text-align:center;
+}
+.lock-input-wrap input:focus{border-color:#34D399;}
+.lock-input-wrap input::placeholder{color:#3E6E58;letter-spacing:.05em;}
+.lock-eye{
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  cursor:pointer;font-size:16px;color:#3E6E58;user-select:none;
+  transition:color .15s;
+}
+.lock-eye:hover{color:#7FB89E;}
+.lock-btn{
+  width:100%;
+  background:#34D399;color:#0A0F0E;
+  border:none;border-radius:8px;
+  padding:11px;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;letter-spacing:.04em;
+  transition:opacity .15s,transform .1s;
+}
+.lock-btn:hover{opacity:.88;transform:translateY(-1px);}
+.lock-btn:active{transform:translateY(0);}
+.lock-error{
+  font-size:11px;color:#F87171;
+  margin-top:10px;height:16px;
+  transition:opacity .2s;
+}
+.lock-error.hidden{opacity:0;}
+.lock-footer{
+  margin-top:32px;
+  font-size:10px;color:#1F2E29;
+  letter-spacing:.08em;
+}
+</style>
+
+<div id="lockscreen">
+  <div class="lock-box">
+    <span class="lock-icon">🔒</span>
+    <h1>Simulateur <em>fiscal</em></h1>
+    <p class="lock-sub">INC QUÉBEC · ACCÈS RESTREINT</p>
+    <div class="lock-input-wrap">
+      <input type="password" id="lock-input" placeholder="Mot de passe" autocomplete="off" onkeydown="if(event.key==='Enter')lockTry()">
+      <span class="lock-eye" id="lock-eye" onclick="lockToggleVis()">👁</span>
+    </div>
+    <button class="lock-btn" onclick="lockTry()">Accéder →</button>
+    <div class="lock-error hidden" id="lock-error">Mot de passe incorrect</div>
+    <div class="lock-footer">MBH Technologies · usage personnel</div>
+  </div>
+</div>
+
+<script>
+const LOCK_HASH='0e8c70b2da0443b5fc6e8a913f4df0ea64ebeb73749671260e8ec3204ed81e52';
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+(function(){
+  if(sessionStorage.getItem('mbh_auth')==='1'){
+    document.getElementById('lockscreen').classList.add('hidden');
+  }
+})();
+async function lockTry(){
+  const val=document.getElementById('lock-input').value;
+  const h=await sha256(val);
+  if(h===LOCK_HASH){
+    sessionStorage.setItem('mbh_auth','1');
+    document.getElementById('lockscreen').classList.add('hidden');
+  } else {
+    const err=document.getElementById('lock-error');
+    err.classList.remove('hidden');
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+    setTimeout(()=>err.classList.add('hidden'),2500);
+  }
+}
+function lockToggleVis(){
+  const inp=document.getElementById('lock-input');
+  const eye=document.getElementById('lock-eye');
+  if(inp.type==='password'){inp.type='text';eye.textContent='🙈';}
+  else{inp.type='password';eye.textContent='👁';}
+}
+</script>
+
 <div class="app">
 
 <!-- ═══ SIDEBAR ═══ -->
